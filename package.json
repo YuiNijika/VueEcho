@@ -1,0 +1,48 @@
+{
+  "name": "vue-echo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "run-p dev:vite watch:content",
+    "dev:vite": "vite",
+    "watch:content": "node scripts/watch-content.js",
+    "generate-index": "node scripts/generate-index.js",
+    "prebuild": "npm run generate-index",
+    "build": "run-p type-check \"build-only {@}\" --",
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --build",
+    "format": "prettier --write --experimental-cli src/"
+  },
+  "dependencies": {
+    "@nuxt/ui": "^4.2.1",
+    "@unhead/vue": "^2.0.19",
+    "github-markdown-css": "^5.8.1",
+    "gray-matter": "^4.0.3",
+    "highlight.js": "^11.11.1",
+    "markdown-it": "^14.1.0",
+    "tailwindcss": "^4.1.17",
+    "vue": "^3.5.25",
+    "vue-router": "^4.6.3"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.3",
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^24.10.1",
+    "@vitejs/plugin-vue": "^6.0.2",
+    "@vue/tsconfig": "^0.8.1",
+    "chokidar": "^5.0.0",
+    "npm-run-all2": "^8.0.4",
+    "prettier": "3.6.2",
+    "typescript": "~5.9.0",
+    "unplugin-auto-import": "^20.3.0",
+    "unplugin-vue-components": "^30.0.0",
+    "vite": "^7.2.4",
+    "vite-plugin-vue-devtools": "^8.0.5",
+    "vue-tsc": "^3.1.5"
+  }
+}
