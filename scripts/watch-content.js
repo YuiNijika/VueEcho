@@ -13,42 +13,42 @@ const outputFile = path.join(__dirname, '../public/index.json')
 function stripMarkdown(markdown) {
   let text = markdown
   
-  // 移除代码块 (```...```)
+  // 移除代码块
   text = text.replace(/```[\s\S]*?```/g, '')
   
-  // 移除行内代码 (`...`)
+  // 移除行内代码
   text = text.replace(/`[^`]*`/g, '')
   
-  // 移除链接 [text](url) 或 [text][ref]
+  // 移除链接
   text = text.replace(/\[([^\]]*)\]\([^\)]*\)/g, '$1')
   text = text.replace(/\[([^\]]*)\]\[[^\]]*\]/g, '$1')
   
-  // 移除图片 ![alt](url)
+  // 移除图片
   text = text.replace(/!\[([^\]]*)\]\([^\)]*\)/g, '$1')
   
-  // 移除标题标记 (#, ##, ###, etc.)
+  // 移除标题标记 
   text = text.replace(/^#{1,6}\s+/gm, '')
   
-  // 移除粗体和斜体标记 (**text**, *text*, __text__, _text_)
+  // 移除粗体和斜体标记
   text = text.replace(/\*\*([^*]+)\*\*/g, '$1')
   text = text.replace(/\*([^*]+)\*/g, '$1')
   text = text.replace(/__([^_]+)__/g, '$1')
   text = text.replace(/_([^_]+)_/g, '$1')
   
-  // 移除删除线 (~~text~~)
+  // 移除删除线
   text = text.replace(/~~([^~]+)~~/g, '$1')
   
-  // 移除引用标记 (>)
+  // 移除引用标记
   text = text.replace(/^>\s+/gm, '')
   
-  // 移除列表标记 (-, *, +, 1., etc.)
+  // 移除列表标记
   text = text.replace(/^[\s]*[-*+]\s+/gm, '')
   text = text.replace(/^[\s]*\d+\.\s+/gm, '')
   
-  // 移除水平线 (---, ***)
+  // 移除水平线
   text = text.replace(/^[-*]{3,}$/gm, '')
   
-  // 移除表格标记 (|)
+  // 移除表格标记
   text = text.replace(/\|/g, ' ')
   
   // 移除多余的空白字符
@@ -125,11 +125,11 @@ function generateIndex() {
         }
       })
 
-      // 按日期排序（最新的在前）
+      // 按日期排序
       articles.sort((a, b) => new Date(b.date) - new Date(a.date))
     }
 
-    // 写入 index.json（即使没有文件也写入空数组）
+    // 写入 index.json
     fs.writeFileSync(outputFile, JSON.stringify(articles, null, 2), 'utf-8')
     console.log(`[${new Date().toLocaleTimeString()}] 已更新 index.json，包含 ${articles.length} 篇文章`)
   } catch (error) {
@@ -153,7 +153,7 @@ function debouncedGenerateIndex() {
 // 初始生成一次
 generateIndex()
 
-// 监听文件变化（递归监听子目录）
+// 监听文件变化 递归监听子目录
 const watcher = chokidar.watch(contentDir, {
   ignored: /(^|[\/\\])\../, // 忽略隐藏文件
   persistent: true,
@@ -164,24 +164,24 @@ const watcher = chokidar.watch(contentDir, {
 watcher
   .on('add', (filePath) => {
     if (filePath.endsWith('.md')) {
-      console.log(`📄 检测到新文件: ${path.basename(filePath)}`)
+      console.log(`检测到新文件: ${path.basename(filePath)}`)
       debouncedGenerateIndex()
     }
   })
   .on('change', (filePath) => {
     if (filePath.endsWith('.md')) {
-      console.log(`✏️  检测到文件修改: ${path.basename(filePath)}`)
+      console.log(`检测到文件修改: ${path.basename(filePath)}`)
       debouncedGenerateIndex()
     }
   })
   .on('unlink', (filePath) => {
     if (filePath.endsWith('.md')) {
-      console.log(`🗑️  检测到文件删除: ${path.basename(filePath)}`)
+      console.log(`检测到文件删除: ${path.basename(filePath)}`)
       debouncedGenerateIndex()
     }
   })
   .on('error', (error) => {
-    console.error('❌ 监听文件时出错:', error)
+    console.error('监听文件时出错:', error)
   })
 
 console.log(`正在监听 ${contentDir} 目录...`)
