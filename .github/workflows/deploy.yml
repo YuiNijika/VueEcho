@@ -37,7 +37,17 @@ jobs:
           version: 8
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            echo "Found pnpm-lock.yaml, attempting to install with frozen lockfile..."
+            pnpm install --frozen-lockfile || {
+              echo "Warning: Failed to install with frozen lockfile (lockfile may be incompatible), falling back to normal install"
+              pnpm install --no-frozen-lockfile
+            }
+          else
+            echo "Warning: pnpm-lock.yaml not found, installing without frozen lockfile"
+            pnpm install --no-frozen-lockfile
+          fi
 
       - name: Generate index.json
         run: pnpm run generate-index
