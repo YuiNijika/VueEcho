@@ -1,0 +1,41 @@
+{
+    "WebSite": {
+        "name": "VueEcho",
+        "description": "一个以Vue+Markdown驱动的纯静态博客日志系统",
+        "logo": null,
+        "icp": null
+    },
+    "HeaderMenuItem": [
+        {
+            "label": "首页",
+            "icon": "i-lucide-home",
+            "to": "/"
+        },
+        {
+            "label": "文章",
+            "icon": "i-lucide-file-text",
+            "children": [
+                {
+                    "label": "Hello World",
+                    "icon": "i-lucide-file-text",
+                    "to": "/hello-world"
+                }
+            ]
+        },
+        {
+            "label": "GitHub",
+            "icon": "line-md:github",
+            "badge": "点个Star吧",
+            "to": "https://github.com/YuiNijika/VueEcho",
+            "target": "_blank"
+        }
+    ],
+    "FooterMenuItem": [
+        {
+            "label": "GitHub",
+            "icon": "line-md:github",
+            "to": "https://github.com/YuiNijika/VueEcho",
+            "target": "_blank"
+        }
+    ]
+}
