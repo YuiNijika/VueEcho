@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import markdownLight from 'github-markdown-css/github-markdown-light.css?url'
 import markdownDark from 'github-markdown-css/github-markdown-dark.css?url'
-import hljsLight from 'highlight.js/styles/github.css?url'
-import hljsDark from 'highlight.js/styles/github-dark.css?url'
 
 onMounted(() => {
   let markdownLink: HTMLLinkElement | null = null
-  let hljsLink: HTMLLinkElement | null = null
 
   const loadThemes = () => {
     // 移除旧样式
     if (markdownLink) markdownLink.remove()
-    if (hljsLink) hljsLink.remove()
 
     const isDark = document.documentElement.classList.contains('dark') ||
       document.documentElement.getAttribute('data-theme') === 'dark' ||
@@ -22,12 +18,6 @@ onMounted(() => {
     markdownLink.rel = 'stylesheet'
     markdownLink.href = isDark ? markdownDark : markdownLight
     document.head.appendChild(markdownLink)
-
-    // 加载 highlight.js 主题 CSS
-    hljsLink = document.createElement('link')
-    hljsLink.rel = 'stylesheet'
-    hljsLink.href = isDark ? hljsDark : hljsLight
-    document.head.appendChild(hljsLink)
   }
 
   loadThemes()
@@ -45,7 +35,6 @@ onMounted(() => {
     mediaQuery.removeEventListener('change', loadThemes)
     observer.disconnect()
     if (markdownLink) markdownLink.remove()
-    if (hljsLink) hljsLink.remove()
   })
 })
 </script>

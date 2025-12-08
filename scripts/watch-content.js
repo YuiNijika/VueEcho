@@ -9,6 +9,42 @@ const __dirname = path.dirname(__filename)
 const contentDir = path.join(__dirname, '../public/content')
 const outputFile = path.join(__dirname, '../public/index.json')
 
+// 摘要最大字符数（按显示宽度计算，中文占2，英文占1）
+const EXCERPT_MAX_LENGTH = 150
+
+// 计算字符串的显示宽度（中文字符占2，英文字符占1）
+function getDisplayWidth(str) {
+  let width = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i]
+    // 判断是否为中文字符（包括中文标点）
+    if (/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/.test(char)) {
+      width += 2
+    } else {
+      width += 1
+    }
+  }
+  return width
+}
+
+// 按显示宽度截取字符串
+function truncateByDisplayWidth(str, maxWidth) {
+  let width = 0
+  let result = ''
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i]
+    const charWidth = /[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]/.test(char) ? 2 : 1
+    
+    if (width + charWidth > maxWidth) {
+      break
+    }
+    
+    result += char
+    width += charWidth
+  }
+  return result
+}
+
 // 去除 markdown 标签，转换为纯文本
 function stripMarkdown(markdown) {
   let text = markdown
@@ -99,6 +135,23 @@ function generateIndex() {
       return files
     }
 
+    // 读取现有的 index.json（如果存在）
+    let existingArticles = []
+    if (fs.existsSync(outputFile)) {
+      try {
+        const existingContent = fs.readFileSync(outputFile, 'utf-8')
+        existingArticles = JSON.parse(existingContent)
+      } catch (error) {
+        console.warn('读取现有 index.json 时出错，将重新生成:', error.message)
+      }
+    }
+
+    // 创建一个以 slug 为键的映射，方便查找
+    const existingArticlesMap = new Map()
+    existingArticles.forEach(article => {
+      existingArticlesMap.set(article.slug, article)
+    })
+
     const markdownFiles = getAllMarkdownFiles(contentDir)
     const articles = []
 
@@ -110,13 +163,23 @@ function generateIndex() {
           const { data, content } = matter(fileContent)
           
           // 去除 markdown 标签，获取纯文本
-          const plainText = stripMarkdown(content)
-          const excerpt = plainText.substring(0, 200).trim() + (plainText.length > 200 ? '...' : '')
+          const plainText = stripMarkdown(content).trim()
+          const displayWidth = getDisplayWidth(plainText)
+          const excerpt = truncateByDisplayWidth(plainText, EXCERPT_MAX_LENGTH) + (displayWidth > EXCERPT_MAX_LENGTH ? '...' : '')
+          
+          // 检查现有文章中是否已有该 slug 的文章
+          const existingArticle = existingArticlesMap.get(slug)
+          let date = data.date || new Date().toISOString()
+          
+          // 如果现有文章已有 date，则保留现有的 date
+          if (existingArticle && existingArticle.date) {
+            date = existingArticle.date
+          }
           
           articles.push({
             slug: slug,
             title: data.title || '无标题',
-            date: data.date || new Date().toISOString(),
+            date: date,
             tags: Array.isArray(data.tags) ? data.tags : (data.tags ? [data.tags] : []),
             excerpt: excerpt
           })

@@ -1,31 +1,57 @@
 <script setup lang="ts">
 import { useArticleDetail } from '@/composables/useArticleDetail'
 import { formatDate } from '@/utils/date'
+import VueEasyLightbox from 'vue-easy-lightbox'
 
 const route = useRoute()
 const { loading, error, articleData, renderedContent, loadArticle } = useArticleDetail()
 
-// 获取当前 slug
+const visible = ref(false)
+const index = ref(0)
+const imgs = ref<string[]>([])
+
+const handleImageClick = (imgSrc: string) => {
+  const markdownContainer = document.querySelector('.markdown-body')
+  if (!markdownContainer) return
+
+  const allImages = Array.from(markdownContainer.querySelectorAll('img')) as HTMLImageElement[]
+  const imgList = allImages.map(img => img.src).filter(Boolean)
+  const currentIndex = imgList.indexOf(imgSrc)
+
+  if (currentIndex !== -1) {
+    imgs.value = imgList
+    index.value = currentIndex
+    visible.value = true
+  }
+}
+
+const processContent = () => {
+  setTimeout(() => {
+    const markdownContainer = document.querySelector('.markdown-body')
+    if (!markdownContainer) return
+
+    markdownContainer.querySelectorAll('img').forEach((img) => {
+      if ((img as any).__lightboxAttached) return
+        ; (img as any).__lightboxAttached = true
+      img.style.cursor = 'pointer'
+      img.addEventListener('click', () => handleImageClick(img.src))
+    })
+  })
+}
+
 const getCurrentSlug = () => {
   const pathMatch = route.params.pathMatch
   return Array.isArray(pathMatch) ? pathMatch.join('/') : (pathMatch as string)
 }
 
-// 重试加载文章
-const handleRetry = () => {
-  const slug = getCurrentSlug()
-  if (slug) {
-    loadArticle(slug)
-  }
-}
-
-// 监听路由变化，重新加载文章
 watch(() => route.params.pathMatch, () => {
   const slug = getCurrentSlug()
-  if (slug) {
-    loadArticle(slug)
-  }
+  if (slug) loadArticle(slug)
 }, { immediate: true })
+
+watch([loading, renderedContent], ([isLoading, content]) => {
+  if (!isLoading && content) processContent()
+}, { flush: 'post' })
 
 </script>
 
@@ -33,25 +59,13 @@ watch(() => route.params.pathMatch, () => {
   <UPage>
     <UPageBody>
       <UContainer>
-        <Error v-if="error" :title="'文章加载失败'" :description="error" />
+        <Error v-if="error" title="文章加载失败" :description="error" />
         <UCard v-else>
           <template v-if="loading">
-            <div class="p-6 space-y-4">
+            <div class="p-6 space-y-4" v-for="i in 3" :key="i">
               <div class="space-y-2">
                 <USkeleton class="h-8 w-3/4" />
                 <USkeleton class="h-4 w-1/2" />
-              </div>
-              <div class="space-y-2 pt-4">
-                <USkeleton class="h-4 w-full" />
-                <USkeleton class="h-4 w-full" />
-                <USkeleton class="h-4 w-5/6" />
-                <USkeleton class="h-4 w-full" />
-                <USkeleton class="h-4 w-4/5" />
-              </div>
-              <div class="space-y-2 pt-4">
-                <USkeleton class="h-4 w-full" />
-                <USkeleton class="h-4 w-full" />
-                <USkeleton class="h-4 w-3/4" />
               </div>
             </div>
           </template>
@@ -71,6 +85,7 @@ watch(() => route.params.pathMatch, () => {
       </UContainer>
     </UPageBody>
   </UPage>
+  <VueEasyLightbox :visible="visible" :imgs="imgs" :index="index" @hide="visible = false" :loop="true" />
 </template>
 
 <style scoped>
@@ -94,5 +109,24 @@ watch(() => route.params.pathMatch, () => {
 .markdown-body :deep(li),
 .markdown-body :deep(span) {
   color: inherit;
+}
+
+.markdown-body :deep(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  transition: transform 0.2s;
+  margin: 0 auto;
+}
+
+.markdown-body :deep(img:hover) {
+  transform: scale(1.02);
+}
+
+.markdown-body :deep(pre) {
+  position: relative;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 </style>

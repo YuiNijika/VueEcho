@@ -1,4 +1,3 @@
-// 文章列表
 export interface Article {
   slug: string
   title: string
